@@ -8,6 +8,8 @@ import {
   Pencil,
   Trash2,
   Download,
+  Search,
+  X,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -39,6 +42,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserFormDialog } from "./user-form-dialog";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface User {
   id: number;
@@ -78,10 +82,18 @@ export function DataTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(Math.ceil(users.length / 10));
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     setTotalPages(Math.ceil(users.length / pageSize));
   }, [users.length, pageSize]);
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      console.log("Search Input:", debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm]);
 
   const handleFilterChange = (filterType: string, value: string) => {
     console.log(`${filterType}: ${value}`);
@@ -158,6 +170,35 @@ export function DataTable({
           </Button>
           <UserFormDialog onAddUser={onAddUser} />
         </div>
+      </div>
+
+      <div className="flex items-end gap-4">
+        <div className="flex-1 space-y-2">
+          <Label htmlFor="search-users" className="text-sm font-medium">
+            Search
+          </Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              id="search-users"
+              placeholder="Search by name, email, username..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        {searchTerm && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSearchTerm("")}
+            className="cursor-pointer h-10"
+          >
+            <X className="mr-2 size-4" />
+            Clear Filters
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-2 sm:grid-cols-4 sm:gap-4">

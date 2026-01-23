@@ -6,11 +6,12 @@ import {
   LogOut,
   BellDot,
   CircleUser,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
-import { useDispatch } from 'react-redux';
-import { logout } from '@/lib/slices/authSlice';
-import { useRouter } from 'next/navigation';
+import { useDispatch } from "react-redux";
+import { logout } from "@/lib/slices/authSlice";
+import { useRouter } from "next/navigation";
 
 import { Logo } from "@/components/logo";
 import {
@@ -44,7 +45,7 @@ export function NavUser({
 
   const handleLogout = () => {
     dispatch(logout());
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   return (
@@ -90,21 +91,9 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/account">
-                  <CircleUser />
-                  Account
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/billing">
-                  <CreditCard />
-                  Billing
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/settings/notifications">
-                  <BellDot />
-                  Notifications
+                <Link href="/dashboard/settings/profile">
+                  <Lock />
+                  Change Password
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

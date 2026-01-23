@@ -14,10 +14,10 @@ interface AuthState {
 const initialState: AuthState = {
   user: {
     id: 1,
-    name: 'Dummy User',
-    email: 'dummy@example.com',
+    name: 'Perks Admin',
+    email: 'admin@the-perksapp.com',
   },
-  isAuthenticated: false,
+  isAuthenticated: true,
 };
 
 const authSlice = createSlice({
