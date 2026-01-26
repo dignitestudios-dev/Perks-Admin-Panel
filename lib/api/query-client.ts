@@ -24,8 +24,6 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: true,
       // Refetch on mount
       refetchOnMount: true,
-      // Don't refetch on re-render
-      refetchOnRerender: false,
     },
     mutations: {
       // Retry failed mutations once
