@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
-import { logout } from "@/lib/slices/authSlice";
+import { signOut } from "@/lib/slices/authSlice";
 import { useRouter } from "next/navigation";
 
 import { Logo } from "@/components/logo";
@@ -44,7 +44,7 @@ export function NavUser({
   const router = useRouter();
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(signOut());
     router.push("/auth/login");
   };
 
