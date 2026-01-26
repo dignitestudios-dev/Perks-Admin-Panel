@@ -4,9 +4,8 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { login } from "@/lib/slices/authSlice";
+import { Eye, EyeOff, Loader } from "lucide-react";
+import { useSignIn } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -14,14 +13,31 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useDispatch();
+  const [error, setError] = useState("");
   const router = useRouter();
+  const { mutate: signIn, isPending } = useSignIn();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Dummy login logic
-    dispatch(login());
-    router.push("/dashboard");
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    // Sign in with hardcoded role as "admin"
+    signIn(
+      { email, password, role: "admin" },
+      {
+        onSuccess: () => {
+          router.push("/dashboard");
+        },
+        onError: (err: any) => {
+          setError(err?.message || "Sign in failed. Please try again.");
+        },
+      },
+    );
   };
 
   return (
@@ -31,6 +47,13 @@ const Login = () => {
         <p className="text-gray-600">Sign in to your account</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Error Message */}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -39,7 +62,7 @@ const Login = () => {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            disabled={isPending}
           />
         </div>
         <div className="space-y-2">
@@ -47,16 +70,17 @@ const Login = () => {
           <div className="relative">
             <Input
               id="password"
-              type={!showPassword ? "text" : "password"}
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              disabled={isPending}
               className="pr-10"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={isPending}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
             >
               {showPassword ? (
@@ -77,8 +101,9 @@ const Login = () => {
           </Link>
         </div>
 
-        <Button type="submit" className="w-full">
-          Sign In
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending && <Loader className="mr-2 h-4 w-4 animate-spin" />}
+          {isPending ? "Signing In..." : "Sign In"}
         </Button>
       </form>
     </div>

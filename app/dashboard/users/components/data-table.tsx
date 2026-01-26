@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   EllipsisVertical,
@@ -79,6 +80,7 @@ export function DataTable({
   onEditUser,
   onAddUser,
 }: DataTableProps) {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(Math.ceil(users.length / 10));
@@ -273,7 +275,7 @@ export function DataTable({
             {users.length ? (
               users.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>
+                  <TableCell className="cursor-pointer" onClick={() => router.push(`/dashboard/users/${user.id}`)}>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="text-xs font-medium">
@@ -281,7 +283,7 @@ export function DataTable({
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
-                        <span className="font-medium">{user.name}</span>
+                        <span className="font-medium hover:underline">{user.name}</span>
                         <span className="text-sm text-muted-foreground">
                           {user.email}
                         </span>
@@ -316,6 +318,7 @@ export function DataTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 cursor-pointer"
+                        onClick={() => router.push(`/dashboard/users/${user.id}`)}
                       >
                         <Eye className="size-4" />
                         <span className="sr-only">View user</span>

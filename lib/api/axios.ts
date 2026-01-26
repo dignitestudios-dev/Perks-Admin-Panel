@@ -1,43 +1,74 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
 
-export const baseURL = "your-api-baseurl.com/api"; // Replace with your actual base URL
+export const baseURL = "https://api.the-perksapp.com/api";
 
 const headers = {
   "Content-Type": "application/json",
 };
+
 const formDataHeaders = {
   "Content-Type": "multipart/form-data",
 };
 
-// Create an Axios instance
-export const API = axios.create({
+/**
+ * Create an Axios instance with base URL and default headers
+ */
+export const API: AxiosInstance = axios.create({
   baseURL: baseURL,
-  timeout: 10000, // Set a timeout (optional)
+  timeout: 30000,
   headers: headers,
+  withCredentials: true,
 });
 
-// Request Interceptor
+/**
+ * Request Interceptor - Add auth token to all requests
+ */
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken"); // Retrieve token from storage
-    if (token) {
-      config.headers.authorization = `Bearer ${token}`;
+    // Get token from localStorage
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Response Interceptor
+/**
+ * Response Interceptor - Handle errors and token expiration
+ */
 API.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  (response) => {
+    return response;
+  },
+  (error: AxiosError) => {
+    // Handle 401 Unauthorized - token expired or invalid
     if (error?.response?.status === 401) {
-      localStorage.removeItem("authToken"); // Remove token if unauthorized
-      window.location.href = "/auth/login"; // Redirect to login page
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        // Dispatch logout action or redirect
+        window.location.href = "/auth/login";
+      }
     }
-    console.log(error);
-    console.log("API Error:", error.response?.data || error);
+
+    // Handle other errors
+    const errorMessage =
+      (error?.response?.data as any)?.message ||
+      error?.message ||
+      "An error occurred";
+
+    console.error("API Error:", {
+      status: error?.response?.status,
+      message: errorMessage,
+      data: error?.response?.data,
+    });
+
     return Promise.reject(error);
   }
 );
