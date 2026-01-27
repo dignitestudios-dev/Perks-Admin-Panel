@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-export const baseURL = "https://api.the-perksapp.com/api";
+export const baseURL = "https://api.the-perksapp.com";
 
 const headers = {
   "Content-Type": "application/json",
@@ -52,7 +52,7 @@ API.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
-        // Dispatch logout action or redirect
+        // Redirect to login
         window.location.href = "/auth/login";
       }
     }

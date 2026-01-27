@@ -1,38 +1,35 @@
-"use client"
+"use client";
 
-import { useParams, useRouter } from "next/navigation"
-import { useState } from "react"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import initialUsersData from "../data.json"
-import { UserProfile } from "@/app/dashboard/users/components/user-profile"
-import { UploadedDocuments } from "@/app/dashboard/users/components/uploaded-documents"
-import { LoginMethods } from "@/app/dashboard/users/components/login-methods"
-import { DeactivateAccount } from "@/app/dashboard/users/components/deactivate-account"
-
-interface User {
-  id: number
-  name: string
-  email: string
-  avatar: string
-  role: string
-  plan: string
-  billing: string
-  status: string
-  joinedDate: string
-  lastLogin: string
-}
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserDetail } from "@/lib/hooks/useUserDetail";
+import { UserProfile } from "@/app/dashboard/users/components/user-profile";
+import { UploadedDocuments } from "@/app/dashboard/users/components/uploaded-documents";
+import { DeactivateAccount } from "@/app/dashboard/users/components/deactivate-account";
+import { MyEarnings } from "@/app/dashboard/users/components/my-earnings";
+import { MyContributions } from "@/app/dashboard/users/components/my-contributions";
+import { FeedBackReceived } from "@/app/dashboard/users/components/feedback-received";
+import { FeedBackGiven } from "@/app/dashboard/users/components/feedback-given";
 
 export default function UserDetailsPage() {
-  const params = useParams()
-  const router = useRouter()
-  const userId = Number(params.id)
-  
-  const user = initialUsersData.find((u: User) => u.id === userId)
+  const params = useParams();
+  const router = useRouter();
+  const userId = params.id as string;
 
-  if (!user) {
+  const { data: user, isLoading, error } = useUserDetail(userId);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error || !user) {
     return (
       <div className="flex flex-col gap-4 p-4 lg:p-6">
         <Button
@@ -45,10 +42,14 @@ export default function UserDetailsPage() {
         </Button>
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold">User not found</h2>
-          <p className="text-muted-foreground mt-2">The user you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground mt-2">
+            {error
+              ? (error as any).message
+              : "The user you're looking for doesn't exist."}
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -63,18 +64,36 @@ export default function UserDetailsPage() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">{user.name}</h1>
-          <p className="text-muted-foreground">{user.email}</p>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-12 w-12">
+            {user.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt={user.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <AvatarFallback className="text-lg font-semibold">
+                {user.name.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-bold">{user.name}</h1>
+            <p className="text-muted-foreground">@{user.username}</p>
+          </div>
         </div>
       </div>
 
       {/* Main Tabs */}
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="login-methods">Login Methods</TabsTrigger>
+          <TabsTrigger value="earnings">My Earnings</TabsTrigger>
+          <TabsTrigger value="contributions">My Contributions</TabsTrigger>
+          <TabsTrigger value="feedback-received">Feedback Received</TabsTrigger>
+          <TabsTrigger value="feedback-given">Feedback Given</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
 
@@ -85,19 +104,34 @@ export default function UserDetailsPage() {
 
         {/* Documents Tab */}
         <TabsContent value="documents" className="space-y-4">
-          <UploadedDocuments userId={user.id} />
+          <UploadedDocuments user={user} />
         </TabsContent>
 
-        {/* Login Methods Tab */}
-        <TabsContent value="login-methods" className="space-y-4">
-          <LoginMethods userId={user.id} />
+        {/* My Earnings Tab */}
+        <TabsContent value="earnings" className="space-y-4">
+          <MyEarnings user={user} />
+        </TabsContent>
+
+        {/* My Contributions Tab */}
+        <TabsContent value="contributions" className="space-y-4">
+          <MyContributions user={user} />
+        </TabsContent>
+
+        {/* Feedback Received Tab */}
+        <TabsContent value="feedback-received" className="space-y-4">
+          <FeedBackReceived user={user} />
+        </TabsContent>
+
+        {/* Feedback Given Tab */}
+        <TabsContent value="feedback-given" className="space-y-4">
+          <FeedBackGiven user={user} />
         </TabsContent>
 
         {/* Account Settings Tab */}
         <TabsContent value="account" className="space-y-4">
-          <DeactivateAccount userId={user.id} userStatus={user.status} />
+          <DeactivateAccount user={user} />
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

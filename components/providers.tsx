@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { store } from '@/lib/store';
@@ -9,14 +9,37 @@ import { authAPI } from '@/lib/api/auth.api';
 import { initializeAuth } from '@/lib/slices/authSlice';
 
 /**
- * Auth Initializer Component
- * Restores authentication state from localStorage on app startup
+ * Initialize Redux store with auth data from localStorage
+ * This runs synchronously before the app renders
  */
-function AuthInitializer({ children }: { children: React.ReactNode }) {
+function initializeReduxStore() {
+  const user = authAPI.getCurrentUser();
+  const token = authAPI.getToken();
+  
+  if (token && user) {
+    store.dispatch(
+      initializeAuth({
+        user,
+        token,
+      })
+    );
+  }
+}
+
+// Initialize on module load
+if (typeof window !== 'undefined') {
+  initializeReduxStore();
+}
+
+/**
+ * Auth Initializer Component
+ * Ensures auth state is properly initialized on client-side navigation
+ */
+function AuthInitializer({ children }: { children: ReactNode }) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Initialize auth state from localStorage on mount
+    // Re-initialize on mount to ensure consistency
     const user = authAPI.getCurrentUser();
     const token = authAPI.getToken();
     
@@ -36,7 +59,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
  * Sets up Redux and TanStack Query providers
  * Wraps the entire application with necessary context
  */
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: { children: ReactNode }) {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>

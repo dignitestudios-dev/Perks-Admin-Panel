@@ -53,8 +53,6 @@ export const authAPI = {
       if (response.data.data.token) {
         localStorage.setItem("authToken", response.data.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.data.user));
-        // Store timestamp for token expiration tracking
-        localStorage.setItem("authTokenTime", new Date().getTime().toString());
       }
 
       return response.data;
@@ -72,23 +70,20 @@ export const authAPI = {
   },
 
   /**
-   * Sign out user and clear local storage
+   * Sign out user - calls backend logout endpoint and clears local storage
+   * @returns void
    */
   signOut: async (): Promise<void> => {
     try {
-      // Optional: Call sign out endpoint if available
-      // await API.post("/auth/signOut");
-
-      // Clear local storage
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-      localStorage.removeItem("authTokenTime");
+      // Call logout endpoint on backend
+      await API.post("/auth/logout");
     } catch (error: any) {
-      console.error("Sign out error:", error);
-      // Clear local storage anyway
+      console.error("Logout API error:", error);
+      // Continue with local logout even if API call fails
+    } finally {
+      // Always clear local storage
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
-      localStorage.removeItem("authTokenTime");
     }
   },
 

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { AlertCircle, CheckCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react";
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,190 +12,179 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { blockUserAPI } from "@/lib/api/block-user.api";
+import type { UserDetail } from "@/lib/api/user-details.api";
 
 interface DeactivateAccountProps {
-  userId: number
-  userStatus: string
+  user: UserDetail;
+  onBlockStatusChange?: (isBlocked: boolean) => void;
 }
 
-export function DeactivateAccount({ userId, userStatus }: DeactivateAccountProps) {
-  const [status, setStatus] = useState(userStatus)
+export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccountProps) {
+  const [isBlocked, setIsBlocked] = useState(user.isBlocked);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const isActive = status === "Active"
+  const handleBlockToggle = async (shouldBlock: boolean) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  const handleToggleStatus = () => {
-    const newStatus = isActive ? "Inactive" : "Active"
-    console.log(`[API CALL] Toggle user status: ${userId} - New Status: ${newStatus}`)
-    setStatus(newStatus)
-  }
+      // Optimistic update
+      setIsBlocked(shouldBlock);
+
+      // API call
+      await blockUserAPI.toggleBlock({
+        blocked: user._id,
+        block: shouldBlock,
+      });
+
+      // Notify parent component if callback provided
+      onBlockStatusChange?.(shouldBlock);
+    } catch (err: any) {
+      // Revert optimistic update on error
+      setIsBlocked(!shouldBlock);
+      setError(err?.message || "Failed to update block status");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
-      {/* Current Status Card */}
+      {error && (
+        <div className="p-4 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Account Status Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Account Status</CardTitle>
-          <CardDescription>Current status of this user account</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="secondary"
-                  className={
-                    isActive
-                      ? "text-green-600 bg-green-50"
-                      : "text-red-600 bg-red-50"
-                  }
-                >
-                  {isActive ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-            </div>
-            {isActive && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Deactivate Account</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogTitle className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    Deactivate Account?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="space-y-4">
-                    <p>
-                      Are you sure you want to deactivate this account? This action will:
-                    </p>
-                    <ul className="list-disc list-inside space-y-2 text-sm">
-                      <li>Prevent the user from logging in</li>
-                      <li>Disable all API access</li>
-                      <li>Keep all user data intact (can be reactivated)</li>
-                      <li>Notify the user via email</li>
-                    </ul>
-                  </AlertDialogDescription>
-                  <div className="flex gap-4">
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleToggleStatus}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      Deactivate
-                    </AlertDialogAction>
-                  </div>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-
-            {!isActive && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline">Reactivate Account</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    Reactivate Account?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="space-y-4">
-                    <p>
-                      Are you sure you want to reactivate this account? This action will:
-                    </p>
-                    <ul className="list-disc list-inside space-y-2 text-sm">
-                      <li>Allow the user to login again</li>
-                      <li>Restore all API access</li>
-                      <li>Notify the user via email</li>
-                    </ul>
-                  </AlertDialogDescription>
-                  <div className="flex gap-4">
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleToggleStatus} className="bg-green-600 hover:bg-green-700">
-                      Reactivate
-                    </AlertDialogAction>
-                  </div>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Account Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Information</CardTitle>
+          <CardTitle>Current Account Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Account Created</p>
-              <p className="text-base mt-1">December 1, 2023</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Last Login</p>
-              <p className="text-base mt-1">January 26, 2024</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Account Type</p>
-              <p className="text-base mt-1">Premium User</p>
+          <div className="p-4 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium mb-2">Account Status</p>
+                <p className="text-sm text-muted-foreground">
+                  {isBlocked ? "User cannot access the platform" : "User has full access"}
+                </p>
+              </div>
+              <Badge
+                className={
+                  isBlocked
+                    ? "bg-red-50 text-red-700 border-red-200"
+                    : "bg-green-50 text-green-700 border-green-200"
+                }
+              >
+                {isBlocked ? "Blocked" : "Active"}
+              </Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border-red-200 bg-red-50">
-        <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
-          <CardDescription className="text-red-600">
-            Irreversible actions that permanently affect this account
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-red-700">
-            Permanently delete this account and all associated data. This action cannot be undone.
-          </p>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">Permanently Delete Account</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogTitle className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-red-600" />
-                Permanently Delete Account?
-              </AlertDialogTitle>
-              <AlertDialogDescription className="space-y-4">
-                <p className="font-semibold text-red-600">
-                  This action cannot be undone. This will permanently delete the account
-                  and remove all associated data.
-                </p>
-                <p>Please type "DELETE" to confirm:</p>
-                <input
-                  type="text"
-                  placeholder="Type DELETE to confirm"
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </AlertDialogDescription>
-              <div className="flex gap-4">
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    console.log(
-                      `[API CALL] Permanently delete user account: ${userId}`
-                    )
-                  }}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Delete Permanently
-                </AlertDialogAction>
-              </div>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
+      {isBlocked && (
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-700 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Account Blocked
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-red-700">
+              This account is currently blocked and the user cannot access the platform.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="border-red-200" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Unblock Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Unblock Account?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  <p>Are you sure you want to unblock this account?</p>
+                  <p className="mt-2 text-sm">The user will be able to access the platform again.</p>
+                </AlertDialogDescription>
+                <div className="flex gap-4">
+                  <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isLoading}
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => handleBlockToggle(false)}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Unblock Account
+                  </AlertDialogAction>
+                </div>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isBlocked && (
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="text-red-700 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Danger Zone
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Block this account to prevent the user from accessing the platform. All their data will be preserved.
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Block Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  Block Account?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="space-y-4">
+                  <p>
+                    Are you sure you want to block this account? This action will:
+                  </p>
+                  <ul className="list-disc list-inside space-y-2 text-sm">
+                    <li>Prevent the user from logging in</li>
+                    <li>Disable all API access</li>
+                    <li>Keep all user data intact</li>
+                    <li>Can be reversed anytime</li>
+                  </ul>
+                </AlertDialogDescription>
+                <div className="flex gap-4">
+                  <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isLoading}
+                    className="bg-red-600 hover:bg-red-700"
+                    onClick={() => handleBlockToggle(true)}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Block Account
+                  </AlertDialogAction>
+                </div>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
-  )
+  );
 }

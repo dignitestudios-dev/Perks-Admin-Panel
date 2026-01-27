@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   EllipsisVertical,
   Eye,
   Pencil,
@@ -11,20 +12,29 @@ import {
   Download,
   Search,
   X,
+  Loader2,
+  Lock,
+  Unlock,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { blockUserAPI } from "@/lib/api/block-user.api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -42,122 +52,92 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UserFormDialog } from "./user-form-dialog";
-import { useDebounce } from "@/hooks/use-debounce";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface User {
-  id: number;
+  _id: string;
   name: string;
-  email: string;
-  avatar: string;
-  role: string;
-  plan: string;
-  billing: string;
-  status: string;
-  joinedDate: string;
-  lastLogin: string;
-}
-
-interface UserFormValues {
-  name: string;
-  email: string;
-  role: string;
-  plan: string;
-  billing: string;
-  status: string;
+  username: string;
+  profilePicture: string;
+  uid: string;
+  venmo: string;
+  cashApp: string;
+  isBlocked?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface DataTableProps {
   users: User[];
-  onDeleteUser: (id: number) => void;
-  onEditUser: (user: User) => void;
-  onAddUser: (userData: UserFormValues) => void;
+  onSearch: (searchValue: string) => void;
+  searchValue: string;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  pageSizeOptions: number[];
+  isLoading?: boolean;
 }
 
 export function DataTable({
   users,
-  onDeleteUser,
-  onEditUser,
-  onAddUser,
+  onSearch,
+  searchValue,
+  currentPage,
+  pageSize,
+  totalPages,
+  totalItems,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions,
+  isLoading = false,
 }: DataTableProps) {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(Math.ceil(users.length / 10));
-  const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [blockedUsers, setBlockedUsers] = useState<Record<string, boolean>>({});
+  const [blockLoading, setBlockLoading] = useState<Record<string, boolean>>({});
+  const [blockError, setBlockError] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    setTotalPages(Math.ceil(users.length / pageSize));
-  }, [users.length, pageSize]);
+  const handleBlockToggle = async (userId: string, shouldBlock: boolean) => {
+    try {
+      setBlockLoading((prev) => ({ ...prev, [userId]: true }));
+      setBlockError((prev) => ({ ...prev, [userId]: "" }));
 
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      console.log("Search Input:", debouncedSearchTerm);
+      // Optimistic update
+      setBlockedUsers((prev) => ({ ...prev, [userId]: shouldBlock }));
+
+      // API call
+      await blockUserAPI.toggleBlock({
+        blocked: userId,
+        block: shouldBlock,
+      });
+    } catch (err: any) {
+      // Revert optimistic update on error
+      setBlockedUsers((prev) => ({ ...prev, [userId]: !shouldBlock }));
+      setBlockError((prev) => ({
+        ...prev,
+        [userId]: err?.message || "Failed to update block status",
+      }));
+    } finally {
+      setBlockLoading((prev) => ({ ...prev, [userId]: false }));
     }
-  }, [debouncedSearchTerm]);
-
-  const handleFilterChange = (filterType: string, value: string) => {
-    console.log(`${filterType}: ${value}`);
   };
 
   const handlePageSizeChange = (value: string) => {
     const newPageSize = Number(value);
-    const newTotalPages = Math.ceil(users.length / newPageSize);
-    setPageSize(newPageSize);
-    setTotalPages(newTotalPages);
-    if (currentPage > newTotalPages) {
-      setCurrentPage(newTotalPages);
-    }
-    console.log(`Page size changed to ${value}, current page ${currentPage}`);
+    onPageSizeChange(newPageSize);
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      const newPage = currentPage - 1;
-      setCurrentPage(newPage);
-      console.log(`Page changed to ${newPage}`);
+      onPageChange(currentPage - 1);
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      const newPage = currentPage + 1;
-      setCurrentPage(newPage);
-      console.log(`Page changed to ${newPage}`);
-      // API Call
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "text-green-600 bg-green-50";
-      case "Pending":
-        return "text-orange-600 bg-orange-50";
-      case "Error":
-        return "text-red-600 bg-red-50";
-      case "Inactive":
-        return "text-gray-600 bg-gray-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "Admin":
-        return "text-red-600 bg-red-50";
-      case "Editor":
-        return "text-blue-600 bg-blue-50";
-      case "Author":
-        return "text-yellow-600 bg-yellow-50";
-      case "Maintainer":
-        return "text-green-600 bg-green-50";
-      case "Subscriber":
-        return "text-purple-600 bg-purple-50";
-      default:
-        return "text-gray-600 bg-gray-50";
+      onPageChange(currentPage + 1);
     }
   };
 
@@ -170,7 +150,6 @@ export function DataTable({
             <Download className="mr-2 size-4" />
             Export
           </Button>
-          <UserFormDialog onAddUser={onAddUser} />
         </div>
       </div>
 
@@ -184,79 +163,25 @@ export function DataTable({
             <Input
               id="search-users"
               placeholder="Search by name, email, username..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchValue}
+              onChange={(e) => onSearch(e.target.value)}
+              disabled={isLoading}
               className="pl-10"
             />
           </div>
         </div>
-        {searchTerm && (
+        {searchValue && (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSearchTerm("")}
+            onClick={() => onSearch("")}
             className="cursor-pointer h-10"
+            disabled={isLoading}
           >
             <X className="mr-2 size-4" />
-            Clear Filters
+            Clear
           </Button>
         )}
-      </div>
-
-      <div className="grid gap-2 sm:grid-cols-4 sm:gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="role-filter" className="text-sm font-medium">
-            Role
-          </Label>
-          <Select onValueChange={(value) => handleFilterChange("role", value)}>
-            <SelectTrigger className="cursor-pointer w-full" id="role-filter">
-              <SelectValue placeholder="Select Role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="Admin">Admin</SelectItem>
-              <SelectItem value="Author">Author</SelectItem>
-              <SelectItem value="Editor">Editor</SelectItem>
-              <SelectItem value="Maintainer">Maintainer</SelectItem>
-              <SelectItem value="Subscriber">Subscriber</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="plan-filter" className="text-sm font-medium">
-            Plan
-          </Label>
-          <Select onValueChange={(value) => handleFilterChange("plan", value)}>
-            <SelectTrigger className="cursor-pointer w-full" id="plan-filter">
-              <SelectValue placeholder="Select Plan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Plans</SelectItem>
-              <SelectItem value="Basic">Basic</SelectItem>
-              <SelectItem value="Professional">Professional</SelectItem>
-              <SelectItem value="Enterprise">Enterprise</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="status-filter" className="text-sm font-medium">
-            Status
-          </Label>
-          <Select
-            onValueChange={(value) => handleFilterChange("status", value)}
-          >
-            <SelectTrigger className="cursor-pointer w-full" id="status-filter">
-              <SelectValue placeholder="Select Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Pending">Pending</SelectItem>
-              <SelectItem value="Error">Error</SelectItem>
-              <SelectItem value="Inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       <div className="rounded-md border">
@@ -264,53 +189,80 @@ export function DataTable({
           <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Billing</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Venmo</TableHead>
+              <TableHead>Cash App</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Updated</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length ? (
+            {isLoading ? (
+              // Show loading skeleton rows matching pageSize
+              Array.from({ length: pageSize }).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-8 w-8" />
+                      <Skeleton className="h-8 w-8" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : users.length ? (
               users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="cursor-pointer" onClick={() => router.push(`/dashboard/users/${user.id}`)}>
+                <TableRow key={user._id}>
+                  <TableCell className="cursor-pointer" onClick={() => router.push(`/dashboard/users/${user._id}`)}>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback className="text-xs font-medium">
-                          {user.avatar}
-                        </AvatarFallback>
+                        {user.profilePicture ? (
+                          <img src={user.profilePicture} alt={user.name} className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                          <AvatarFallback className="text-xs font-medium">
+                            {user.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="font-medium hover:underline">{user.name}</span>
                         <span className="text-sm text-muted-foreground">
-                          {user.email}
+                          @{user.username}
                         </span>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={getRoleColor(user.role)}
-                    >
-                      {user.role}
-                    </Badge>
+                    <span className="text-sm">{user.venmo || "-"}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="font-medium">{user.plan}</span>
+                    <span className="text-sm">{user.cashApp || "-"}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm">{user.billing}</span>
+                    <span className="text-sm">{new Date(user.createdAt).toLocaleDateString()}</span>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={getStatusColor(user.status)}
-                    >
-                      {user.status}
-                    </Badge>
+                    <span className="text-sm">{new Date(user.updatedAt).toLocaleDateString()}</span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -318,52 +270,63 @@ export function DataTable({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 cursor-pointer"
-                        onClick={() => router.push(`/dashboard/users/${user.id}`)}
+                        onClick={() => router.push(`/dashboard/users/${user._id}`)}
                       >
                         <Eye className="size-4" />
                         <span className="sr-only">View user</span>
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 cursor-pointer"
-                        onClick={() => onEditUser(user)}
-                      >
-                        <Pencil className="size-4" />
-                        <span className="sr-only">Edit user</span>
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 cursor-pointer"
+                            className={`h-8 w-8 cursor-pointer ${
+                              blockedUsers[user._id] ?? user.isBlocked
+                                ? "text-red-600 hover:bg-red-50"
+                                : "text-gray-600 hover:bg-gray-50"
+                            }`}
+                            disabled={blockLoading[user._id]}
                           >
-                            <EllipsisVertical className="size-4" />
-                            <span className="sr-only">More actions</span>
+                            {blockLoading[user._id] ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : blockedUsers[user._id] ?? user.isBlocked ? (
+                              <Lock className="size-4" />
+                            ) : (
+                              <Unlock className="size-4" />
+                            )}
+                            <span className="sr-only">Toggle block status</span>
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="cursor-pointer">
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
-                            Send Email
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="cursor-pointer">
-                            Reset Password
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            className="cursor-pointer"
-                            onClick={() => onDeleteUser(user.id)}
-                          >
-                            <Trash2 className="mr-2 size-4" />
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogTitle>
+                            {(blockedUsers[user._id] ?? user.isBlocked) ? "Unblock User?" : "Block User?"}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {(blockedUsers[user._id] ?? user.isBlocked)
+                              ? `Are you sure you want to unblock ${user.name}? They will be able to access the platform again.`
+                              : `Are you sure you want to block ${user.name}? They won't be able to access the platform.`}
+                          </AlertDialogDescription>
+                          <div className="flex gap-4">
+                            <AlertDialogCancel disabled={blockLoading[user._id]}>
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              disabled={blockLoading[user._id]}
+                              className={
+                                (blockedUsers[user._id] ?? user.isBlocked)
+                                  ? "bg-green-600 hover:bg-green-700"
+                                  : "bg-red-600 hover:bg-red-700"
+                              }
+                              onClick={() =>
+                                handleBlockToggle(user._id, !(blockedUsers[user._id] ?? user.isBlocked))
+                              }
+                            >
+                              {blockLoading[user._id] && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                              {(blockedUsers[user._id] ?? user.isBlocked) ? "Unblock" : "Block"}
+                            </AlertDialogAction>
+                          </div>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -387,18 +350,22 @@ export function DataTable({
           <Select
             value={pageSize.toString()}
             onValueChange={handlePageSizeChange}
+            disabled={isLoading}
           >
             <SelectTrigger className="w-20 cursor-pointer" id="page-size">
               <SelectValue placeholder={pageSize.toString()} />
             </SelectTrigger>
             <SelectContent side="top">
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="12">12</SelectItem>
-              <SelectItem value="30">30</SelectItem>
-              <SelectItem value="40">40</SelectItem>
-              <SelectItem value="50">50</SelectItem>
+              {pageSizeOptions.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
+          <span className="text-sm text-muted-foreground">
+            of {totalItems} total
+          </span>
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="hidden sm:flex items-center space-x-2">
@@ -407,24 +374,26 @@ export function DataTable({
               {currentPage} of {totalPages}
             </strong>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={handlePreviousPage}
-              disabled={currentPage <= 1}
-              className="cursor-pointer"
+              disabled={currentPage <= 1 || isLoading}
+              className="cursor-pointer h-9 w-9"
             >
-              Previous
+              <ChevronLeft className="size-4" />
+              <span className="sr-only">Previous page</span>
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={handleNextPage}
-              disabled={currentPage >= totalPages}
-              className="cursor-pointer"
+              disabled={currentPage >= totalPages || isLoading}
+              className="cursor-pointer h-9 w-9"
             >
-              Next
+              <ChevronRight className="size-4" />
+              <span className="sr-only">Next page</span>
             </Button>
           </div>
         </div>

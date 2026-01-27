@@ -9,9 +9,8 @@ import {
   Lock,
 } from "lucide-react";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
-import { signOut } from "@/lib/slices/authSlice";
 import { useRouter } from "next/navigation";
+import { useSignOut } from "@/lib/hooks/useAuth";
 
 import { Logo } from "@/components/logo";
 import {
@@ -40,12 +39,15 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const dispatch = useDispatch();
   const router = useRouter();
+  const { mutate: signOut, isPending: isLoggingOut } = useSignOut();
 
   const handleLogout = () => {
-    dispatch(signOut());
-    router.push("/auth/login");
+    signOut(undefined, {
+      onSuccess: () => {
+        router.push("/auth/login");
+      },
+    });
   };
 
   return (
