@@ -116,4 +116,35 @@ export const usersAPI = {
       };
     }
   },
+
+  /**
+   * Get all blocked users with pagination and search
+   * @param params - page, limit, and search query
+   * @returns Blocked users list with pagination info
+   */
+  getBlocked: async (params: GetUsersParams = {}): Promise<GetUsersResponse> => {
+    try {
+      const { page = 1, limit = 10, search = "" } = params;
+
+      const response = await API.get<GetUsersResponse>("/users/blocked", {
+        params: {
+          page,
+          limit,
+          ...(search && { search }),
+        },
+      });
+
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch blocked users";
+
+      throw {
+        message,
+        status: error?.response?.status,
+      };
+    }
+  },
 };

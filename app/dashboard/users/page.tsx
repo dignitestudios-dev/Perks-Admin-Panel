@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useUsers } from "@/lib/hooks/useUsers"
 import { useDebounce } from "@/hooks/use-debounce"
 import { StatCards } from "./components/stat-cards"
@@ -12,6 +13,12 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 export default function UsersPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
+
+  // Invalidate users data when component mounts for fresh data
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["users"] })
+  }, [])
 
   // Initialize state from URL params
   const [page, setPage] = useState(1)

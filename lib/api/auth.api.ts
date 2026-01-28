@@ -31,6 +31,16 @@ export interface AuthError {
   status?: number;
 }
 
+export interface ChangePasswordRequest {
+  password: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 /**
  * Authentication API service
  * Handles all auth-related API calls at production level
@@ -116,6 +126,26 @@ export const authAPI = {
       return !!localStorage.getItem("authToken");
     }
     return false;
+  },
+
+  /**
+   * Change password
+   * @param data - Current password and new password
+   * @returns Success response
+   */
+  changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
+    try {
+      const response = await API.post<ChangePasswordResponse>("/auth/changePassword", {
+        password: data.password,
+        newPassword: data.newPassword,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw {
+        message: error.response?.data?.message || "Failed to change password",
+        status: error.response?.status || 500,
+      };
+    }
   },
 };
 

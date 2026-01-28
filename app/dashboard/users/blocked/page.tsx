@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useUsers } from "@/lib/hooks/useUsers"
+import { useQueryClient } from "@tanstack/react-query"
+import { useBlockedUsers } from "@/lib/hooks/useUsers"
 import { useDebounce } from "@/hooks/use-debounce"
 import { DataTable } from "../components/data-table"
 
@@ -9,19 +10,24 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
 
 export default function BlockedUsersPage() {
   // Initialize state
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchInput, setSearchInput] = useState("")
   const [isInitialized, setIsInitialized] = useState(true)
 
+  // Invalidate blocked users data when component mounts for fresh data
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["blocked-users"] })
+  }, [])
+
   const debouncedSearch = useDebounce(searchInput, 500)
 
   // request blocked users from hook if supported, otherwise fetch all and filter
-  const { data, isLoading, error } = (useUsers as any)({
+  const { data, isLoading, error } = useBlockedUsers({
     page,
     limit: pageSize,
     search: debouncedSearch,
-    blocked: true,
   })
 
   const users = data?.data || []
@@ -76,7 +82,9 @@ export default function BlockedUsersPage() {
           onPageSizeChange={handlePageSizeChange}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
           isLoading={isLoading}
-          hideActions={true}
+        //   hideViewDetails={true}
+          hideBlockButton={false}
+          showBlockedUserContext={true}
         />
       </div>
     </div>

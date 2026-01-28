@@ -7,8 +7,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CircleCheckBig, User, Mail, Eye, EyeOff } from "lucide-react";
+import { CircleCheckBig, User, Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authAPI } from "@/lib/api/auth.api";
+import { toast } from "sonner";
 
 interface PasswordValidation {
   minLength: boolean;
@@ -39,8 +41,10 @@ const PasswordValidator = ({ isValid }: { isValid: boolean }) => (
 
 export default function ProfilePage() {
   const user = useSelector((state: RootState) => state.auth.user);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordValidation, setPasswordValidation] =
@@ -51,40 +55,64 @@ export default function ProfilePage() {
       number: false,
       specialChar: false,
     });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
     setPasswordValidation(validatePassword(value));
+    setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    if (!currentPassword.trim()) {
+      setError("Current password is required");
+      return;
+    }
 
     const isValidPassword = Object.values(passwordValidation).every(
       (valid) => valid,
     );
 
     if (!isValidPassword) {
-      console.log("Password does not meet all requirements");
+      setError("Password does not meet all requirements");
       return;
     }
 
     if (password !== confirmPassword) {
-      console.log("Passwords do not match");
+      setError("Passwords do not match");
       return;
     }
 
-    console.log("Password:", password);
-    setPassword("");
-    setConfirmPassword("");
-    setPasswordValidation({
-      minLength: false,
-      uppercase: false,
-      lowercase: false,
-      number: false,
-      specialChar: false,
-    });
+    try {
+      setIsLoading(true);
+      await authAPI.changePassword({
+        password: currentPassword,
+        newPassword: password,
+      });
+
+      toast.success("Password changed successfully");
+      setCurrentPassword("");
+      setPassword("");
+      setConfirmPassword("");
+      setPasswordValidation({
+        minLength: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        specialChar: false,
+      });
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to change password";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -100,7 +128,7 @@ export default function ProfilePage() {
 
         <div className="space-y-4">
           {/* Name Field */}
-          <div className="flex items-center gap-4 py-4 px-4 rounded-lg bg-gradient-to-r from-slate-50 to-transparent border border-slate-200/50 hover:border-slate-300 transition-colors">
+          <div className="flex items-center gap-4 py-4 px-4 rounded-lg bg-linear-to-r from-slate-50 to-transparent border border-slate-200/50 hover:border-slate-300 transition-colors">
             <div className="p-2 bg-blue-100 rounded-lg">
               <User className="w-5 h-5 text-blue-600" />
             </div>
@@ -115,7 +143,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Email Field */}
-          <div className="flex items-center gap-4 py-4 px-4 rounded-lg bg-gradient-to-r from-slate-50 to-transparent border border-slate-200/50 hover:border-slate-300 transition-colors">
+          <div className="flex items-center gap-4 py-4 px-4 rounded-lg bg-linear-to-r from-slate-50 to-transparent border border-slate-200/50 hover:border-slate-300 transition-colors">
             <div className="p-2 bg-emerald-100 rounded-lg">
               <Mail className="w-5 h-5 text-emerald-600" />
             </div>
@@ -130,7 +158,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+        <div className="h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
       </div>
 
       {/* Change Password Section */}
@@ -138,6 +166,39 @@ export default function ProfilePage() {
         <h2 className="text-2xl font-bold mb-6">Change Password</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Current Password Field */}
+          <div>
+            <Label htmlFor="currentPassword" className="text-sm font-medium">
+              Current Password
+            </Label>
+            <div className="relative mt-2">
+              <Input
+                id="currentPassword"
+                type={showCurrentPassword ? "text" : "password"}
+                placeholder="Enter your current password"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setError("");
+                }}
+                disabled={isLoading}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isLoading}
+              >
+                {showCurrentPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* New Password Field */}
           <div>
             <Label htmlFor="password" className="text-sm font-medium">
@@ -150,12 +211,14 @@ export default function ProfilePage() {
                 placeholder="Enter new password"
                 value={password}
                 onChange={handlePasswordChange}
+                disabled={isLoading}
                 className="pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isLoading}
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -177,13 +240,18 @@ export default function ProfilePage() {
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm new password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setError("");
+                }}
+                disabled={isLoading}
                 className="pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isLoading}
               >
                 {showConfirmPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -241,18 +309,34 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* Error Message */}
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+              {error}
+            </div>
+          )}
+
           {/* Submit Button */}
           <Button
             type="submit"
             className="w-full"
             disabled={
+              !currentPassword ||
               !password ||
               !confirmPassword ||
               !Object.values(passwordValidation).every((valid) => valid) ||
-              password !== confirmPassword
+              password !== confirmPassword ||
+              isLoading
             }
           >
-            Update Password
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update Password"
+            )}
           </Button>
         </form>
       </Card>

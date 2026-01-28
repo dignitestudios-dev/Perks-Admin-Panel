@@ -68,6 +68,10 @@ const data = {
           title: "Users",
           url: "/dashboard/users",
           icon: Users2,
+          items: [
+            { title: "Users Management", url: "/dashboard/users" },
+            { title: "Blocked Users", url: "/dashboard/users/blocked" },
+          ],
         },
         {
           title: "Posts",

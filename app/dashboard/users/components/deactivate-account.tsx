@@ -90,9 +90,9 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
 
       {/* Danger Zone */}
       {isBlocked && (
-        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02]">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10 rounded-t-lg">
-            <CardTitle className="text-primary flex items-center gap-2">
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] pt-0">
+          <CardHeader className="bg-red-600 border-b border-primary/10 rounded-t-lg pt-6">
+            <CardTitle className="text-white flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               Account Blocked
             </CardTitle>
@@ -103,7 +103,7 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
             </p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10" disabled={isLoading}>
+                <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary cursor-pointer" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Unblock Account
                 </Button>

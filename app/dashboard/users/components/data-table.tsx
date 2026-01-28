@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   ChevronLeft,
   ChevronRight,
@@ -80,6 +82,11 @@ interface DataTableProps {
   pageSizeOptions: number[];
   isLoading?: boolean;
   hideActions?: boolean;
+  hideViewDetails?: boolean;
+  hideBlockButton?: boolean;
+  showBlockedUserContext?: boolean;
+  onUnblockSuccess?: (userName: string) => void;
+  onBlockSuccess?: () => void;
 }
 
 export function DataTable({
@@ -95,13 +102,19 @@ export function DataTable({
   pageSizeOptions,
   isLoading = false,
   hideActions = false,
+  hideViewDetails = false,
+  hideBlockButton = false,
+  showBlockedUserContext = false,
+  onUnblockSuccess,
+  onBlockSuccess,
 }: DataTableProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [blockedUsers, setBlockedUsers] = useState<Record<string, boolean>>({});
   const [blockLoading, setBlockLoading] = useState<Record<string, boolean>>({});
   const [blockError, setBlockError] = useState<Record<string, string>>({});
 
-  const handleBlockToggle = async (userId: string, shouldBlock: boolean) => {
+  const handleBlockToggle = async (userId: string, shouldBlock: boolean, userName?: string) => {
     try {
       setBlockLoading((prev) => ({ ...prev, [userId]: true }));
       setBlockError((prev) => ({ ...prev, [userId]: "" }));
@@ -114,6 +127,27 @@ export function DataTable({
         blocked: userId,
         block: shouldBlock,
       });
+
+      // Refetch both queries immediately to reflect changes
+      await queryClient.refetchQueries({ queryKey: ["users"] });
+      await queryClient.refetchQueries({ queryKey: ["blocked-users"] });
+
+      // Show success message
+      if (shouldBlock) {
+        toast.success(`${userName || "User"} has been blocked`);
+      } else {
+        toast.success(`${userName || "User"} has been unblocked`);
+      }
+
+      // Trigger callback for unblock success
+      if (!shouldBlock && onUnblockSuccess && userName) {
+        onUnblockSuccess(userName);
+      }
+
+      // Trigger callback for block success
+      if (shouldBlock && onBlockSuccess) {
+        onBlockSuccess();
+      }
     } catch (err: any) {
       // Revert optimistic update on error
       setBlockedUsers((prev) => ({ ...prev, [userId]: !shouldBlock }));
@@ -272,49 +306,56 @@ export function DataTable({
                   {!hideActions && (
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 cursor-pointer"
-                          onClick={() =>
-                            router.push(`/dashboard/users/${user._id}`)
-                          }
-                        >
-                          <Eye className="size-4" />
-                          <span className="sr-only">View user</span>
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className={`h-8 w-8 cursor-pointer ${
-                                (blockedUsers[user._id] ?? user.isBlocked)
-                                  ? "text-red-600 hover:bg-red-50"
-                                  : "hover:text-black hover:bg-gray-300"
-                              }`}
-                              disabled={blockLoading[user._id]}
-                            >
-                              {blockLoading[user._id] ? (
-                                <Loader2 className="size-4 animate-spin" />
-                              ) : (blockedUsers[user._id] ?? user.isBlocked) ? (
-                                <Lock className="size-4" />
-                              ) : (
-                                <Unlock className="size-4" />
-                              )}
-                              <span className="sr-only">Toggle block status</span>
-                            </Button>
-                          </AlertDialogTrigger>
+                        {!hideViewDetails && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 cursor-pointer"
+                            onClick={() =>
+                              router.push(`/dashboard/users/${user._id}`)
+                            }
+                          >
+                            <Eye className="size-4" />
+                            <span className="sr-only">View user</span>
+                          </Button>
+                        )}
+                        {!hideBlockButton && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-8 w-8 cursor-pointer ${
+                                  (blockedUsers[user._id] ?? user.isBlocked)
+                                    ? "text-red-600 hover:bg-red-50"
+                                    : "hover:text-black hover:bg-gray-300"
+                                }`}
+                                disabled={blockLoading[user._id]}
+                              >
+                                {blockLoading[user._id] ? (
+                                  <Loader2 className="size-4 animate-spin" />
+                                ) : (blockedUsers[user._id] ?? user.isBlocked) ? (
+                                  <Lock className="size-4" />
+                                ) : (
+                                  <Unlock className="size-4" />
+                                )}
+                                <span className="sr-only">Toggle block status</span>
+                              </Button>
+                            </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogTitle>
-                              {(blockedUsers[user._id] ?? user.isBlocked)
+                              {showBlockedUserContext
                                 ? "Unblock User?"
-                                : "Block User?"}
+                                : (blockedUsers[user._id] ?? user.isBlocked)
+                                  ? "Unblock User?"
+                                  : "Block User?"}
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              {(blockedUsers[user._id] ?? user.isBlocked)
-                                ? `Are you sure you want to unblock ${user.name}? They will be able to access the platform again.`
-                                : `Are you sure you want to block ${user.name}? They won't be able to access the platform.`}
+                              {showBlockedUserContext
+                                ? `Unblock ${user.name} to allow them access to the platform again.`
+                                : (blockedUsers[user._id] ?? user.isBlocked)
+                                  ? `Are you sure you want to unblock ${user.name}? They will be able to access the platform again.`
+                                  : `Are you sure you want to block ${user.name}? They won't be able to access the platform.`}
                             </AlertDialogDescription>
                             <div className="flex gap-4">
                               <AlertDialogCancel
@@ -325,27 +366,31 @@ export function DataTable({
                               <AlertDialogAction
                                 disabled={blockLoading[user._id]}
                                 className={
-                                  (blockedUsers[user._id] ?? user.isBlocked)
+                                  showBlockedUserContext || (blockedUsers[user._id] ?? user.isBlocked)
                                     ? "bg-green-600 hover:bg-green-700"
                                     : "bg-red-600 hover:bg-red-700"
                                 }
                                 onClick={() =>
                                   handleBlockToggle(
                                     user._id,
-                                    !(blockedUsers[user._id] ?? user.isBlocked),
+                                    showBlockedUserContext ? false : !(blockedUsers[user._id] ?? user.isBlocked),
+                                    user.name,
                                   )
                                 }
                               >
                                 {blockLoading[user._id] && (
                                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                {(blockedUsers[user._id] ?? user.isBlocked)
+                                {showBlockedUserContext
                                   ? "Unblock"
-                                  : "Block"}
+                                  : (blockedUsers[user._id] ?? user.isBlocked)
+                                    ? "Unblock"
+                                    : "Block"}
                               </AlertDialogAction>
                             </div>
                           </AlertDialogContent>
                         </AlertDialog>
+                        )}
                       </div>
                     </TableCell>
                   )}
