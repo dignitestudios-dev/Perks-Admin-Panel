@@ -1,6 +1,6 @@
 "use client"
 
-import { DollarSign, User } from "lucide-react"
+import { DollarSign } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -15,9 +15,9 @@ export function MyEarnings({ user }: MyEarningsProps) {
 
   if (earnings.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>My Earnings</CardTitle>
+      <Card className="border border-primary/10 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg">
+          <CardTitle className="text-primary text-xl">My Earnings</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
@@ -33,44 +33,53 @@ export function MyEarnings({ user }: MyEarningsProps) {
   const totalFees = earnings.reduce((sum, tip) => sum + (tip.appFee + tip.stripeFee), 0)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-lg hover:shadow-sm transition-shadow">
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Earnings</p>
-              <p className="text-3xl font-bold">${totalEarnings.toFixed(2)}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Total Earnings</p>
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">${totalEarnings.toFixed(2)}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-lg hover:shadow-sm transition-shadow">
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Fees</p>
-              <p className="text-3xl font-bold">${totalFees.toFixed(2)}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Total Fees</p>
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">${totalFees.toFixed(2)}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-lg hover:shadow-sm transition-shadow">
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Transactions</p>
-              <p className="text-3xl font-bold">{earnings.length}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Transactions</p>
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{earnings.length}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Earnings List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Tips Received</CardTitle>
+      <Card className="border border-primary/10 shadow-lg hover:shadow-xl transition-shadow pt-0">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg pt-6">
+          <CardTitle className="text-primary text-xl">Recent Tips Received</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {earnings.map((tip) => (
-              <div key={tip._id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+              <div key={tip._id} className="flex items-center justify-between p-4 rounded-lg border border-primary/10 bg-gradient-to-r from-primary/[0.03] to-transparent hover:from-primary/5 hover:to-primary/[0.02] transition-colors">
                 <div className="flex items-center gap-4 flex-1">
                   <Avatar className="h-10 w-10">
                     {tip.sentBy.profilePicture ? (
@@ -90,8 +99,8 @@ export function MyEarnings({ user }: MyEarningsProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-green-600">${tip.amount.toFixed(2)}</p>
-                  <Badge variant="outline" className="mt-2 capitalize">
+                  <p className="font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">${tip.amount.toFixed(2)}</p>
+                  <Badge variant="outline" className="mt-2 capitalize border-primary/30 text-primary">
                     {tip.type}
                   </Badge>
                 </div>

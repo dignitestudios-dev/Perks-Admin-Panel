@@ -22,6 +22,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Perks Admin",
   description: "Perks admin dashboard",
+  icons: {
+    icon: ["/images/white-logo.png"]
+  },
   robots: "noindex, nofollow",
 };
 

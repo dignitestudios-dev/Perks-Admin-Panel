@@ -74,9 +74,8 @@ const data = {
           url: "/dashboard/posts",
           icon: FileText,
           items: [
-            { title: "Anonymous Posts", url: "/dashboard/posts#anonymous" },
-            { title: "Donation Posts", url: "/dashboard/posts#donations" },
-            { title: "Reported Content", url: "/dashboard/posts#reported" },
+            { title: "Anonymous Posts", url: "/dashboard/posts/anonymous" },
+            { title: "Donation Posts", url: "/dashboard/posts/donations" },
           ],
         },
       ],

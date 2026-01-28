@@ -19,9 +19,9 @@ export function UploadedDocuments({ user }: UploadedDocumentsProps) {
 
   if (documents.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Uploaded Documents</CardTitle>
+      <Card className="border border-primary/10 shadow-lg pt-0">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg pt-6">
+          <CardTitle className="text-primary text-xl">Uploaded Documents</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
@@ -34,17 +34,17 @@ export function UploadedDocuments({ user }: UploadedDocumentsProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Uploaded Documents ({documents.length})</CardTitle>
+    <Card className="border border-primary/10 shadow-lg hover:shadow-xl transition-shadow">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg">
+        <CardTitle className="text-primary text-xl">Uploaded Documents ({documents.length})</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {documents.map((doc, index) => (
-            <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+            <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-primary/10 bg-gradient-to-r from-primary/[0.03] to-transparent hover:from-primary/5 hover:to-primary/[0.02] transition-colors">
               <div className="flex items-center gap-4 flex-1">
-                <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-blue-600" />
+                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{doc.name}</p>

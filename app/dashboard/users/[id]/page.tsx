@@ -53,82 +53,129 @@ export default function UserDetailsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 lg:p-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => router.back()}
-          className="h-9 w-9"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12">
-            {user.profilePicture ? (
-              <img
-                src={user.profilePicture}
-                alt={user.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <AvatarFallback className="text-lg font-semibold">
-                {user.name.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <div>
-            <h1 className="text-3xl font-bold">{user.name}</h1>
-            <p className="text-muted-foreground">@{user.username}</p>
+    <div className="flex flex-col gap-8 p-4 lg:p-6">
+      {/* Header with Gradient Background */}
+      <div className="relative">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl blur-xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.08] to-transparent rounded-2xl" />
+
+        <div className="relative px-6 py-8 rounded-2xl border border-primary/10 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
+          {/* Back Button */}
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => router.back()}
+              className="h-9 w-9 border-primary/20 hover:bg-primary/10 hover:text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* User Info */}
+          <div className="flex items-center gap-5">
+            {/* Avatar with Gradient Border */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/60 rounded-2xl blur-md opacity-30" />
+              <Avatar className="h-20 w-20 border-2 border-primary/20 relative">
+                {user.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/20 to-primary/10">
+                    {user.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </div>
+
+            {/* User Details */}
+            <div className="flex-grow">
+              <h1 className="text-4xl font-bold tracking-tight">{user.name}</h1>
+              <p className="text-primary/80 font-medium mt-1">@{user.username}</p>
+              <p className="text-sm text-muted-foreground mt-2">User Details & Management</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Tabs */}
+      {/* Tabs with Modern Styling */}
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="earnings">My Earnings</TabsTrigger>
-          <TabsTrigger value="contributions">My Contributions</TabsTrigger>
-          <TabsTrigger value="feedback-received">Feedback Received</TabsTrigger>
-          <TabsTrigger value="feedback-given">Feedback Given</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-7 bg-muted/50 border border-muted p-1 rounded-xl">
+          <TabsTrigger 
+            value="profile"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            Profile
+          </TabsTrigger>
+          <TabsTrigger 
+            value="documents"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            Documents
+          </TabsTrigger>
+          <TabsTrigger 
+            value="earnings"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            My Earnings
+          </TabsTrigger>
+          <TabsTrigger 
+            value="contributions"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            My Contributions
+          </TabsTrigger>
+          <TabsTrigger 
+            value="feedback-received"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            Feedback Received
+          </TabsTrigger>
+          <TabsTrigger 
+            value="feedback-given"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            Feedback Given
+          </TabsTrigger>
+          <TabsTrigger 
+            value="account"
+            className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg"
+          >
+            Account
+          </TabsTrigger>
         </TabsList>
 
-        {/* Profile Tab */}
-        <TabsContent value="profile" className="space-y-4">
+        {/* Tab Contents */}
+        <TabsContent value="profile" className="space-y-4 mt-6">
           <UserProfile user={user} />
         </TabsContent>
 
-        {/* Documents Tab */}
-        <TabsContent value="documents" className="space-y-4">
+        <TabsContent value="documents" className="space-y-4 mt-6">
           <UploadedDocuments user={user} />
         </TabsContent>
 
-        {/* My Earnings Tab */}
-        <TabsContent value="earnings" className="space-y-4">
+        <TabsContent value="earnings" className="space-y-4 mt-6">
           <MyEarnings user={user} />
         </TabsContent>
 
-        {/* My Contributions Tab */}
-        <TabsContent value="contributions" className="space-y-4">
+        <TabsContent value="contributions" className="space-y-4 mt-6">
           <MyContributions user={user} />
         </TabsContent>
 
-        {/* Feedback Received Tab */}
-        <TabsContent value="feedback-received" className="space-y-4">
+        <TabsContent value="feedback-received" className="space-y-4 mt-6">
           <FeedBackReceived user={user} />
         </TabsContent>
 
-        {/* Feedback Given Tab */}
-        <TabsContent value="feedback-given" className="space-y-4">
+        <TabsContent value="feedback-given" className="space-y-4 mt-6">
           <FeedBackGiven user={user} />
         </TabsContent>
 
-        {/* Account Settings Tab */}
-        <TabsContent value="account" className="space-y-4">
+        <TabsContent value="account" className="space-y-4 mt-6">
           <DeactivateAccount user={user} />
         </TabsContent>
       </Tabs>

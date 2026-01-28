@@ -72,7 +72,7 @@ export function StatCard({
 
         <div className="space-y-2">
           <p className="text-muted-foreground text-sm font-medium">{title}</p>
-          <div className="text-2xl font-bold">{current}</div>
+          <div className="text-2xl font-bold text-primary">{current}</div>
           {description && (
             <p className="text-muted-foreground text-xs">{description}</p>
           )}

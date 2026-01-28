@@ -8,17 +8,17 @@ interface StatCardsProps {
 export function StatCards({ totalUsers }: StatCardsProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <Card className="border">
+      <Card className="border bg-linear-to-r from-primary/20 to-primary/5">
         <CardContent className="space-y-2">
           <div className="flex items-center justify-between">
-            <Users className="text-muted-foreground size-6" />
+            <Users className="text-gray-600 size-6" />
           </div>
 
           <div className="space-y-2">
-            <p className="text-muted-foreground text-sm font-medium">
+            <p className="text-gray-600 text-sm font-medium">
               Total Users
             </p>
-            <div className="text-2xl font-bold">{totalUsers}</div>
+            <div className="text-2xl font-bold text-primary">{totalUsers}</div>
           </div>
         </CardContent>
       </Card>

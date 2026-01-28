@@ -79,6 +79,7 @@ interface DataTableProps {
   onPageSizeChange: (size: number) => void;
   pageSizeOptions: number[];
   isLoading?: boolean;
+  hideActions?: boolean;
 }
 
 export function DataTable({
@@ -93,6 +94,7 @@ export function DataTable({
   onPageSizeChange,
   pageSizeOptions,
   isLoading = false,
+  hideActions = false,
 }: DataTableProps) {
   const router = useRouter();
   const [blockedUsers, setBlockedUsers] = useState<Record<string, boolean>>({});
@@ -143,16 +145,6 @@ export function DataTable({
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <span></span>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" className="cursor-pointer">
-            <Download className="mr-2 size-4" />
-            Export
-          </Button>
-        </div>
-      </div>
-
       <div className="flex items-end gap-4">
         <div className="flex-1 space-y-2">
           <Label htmlFor="search-users" className="text-sm font-medium">
@@ -193,7 +185,7 @@ export function DataTable({
               <TableHead>Cash App</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Updated</TableHead>
-              <TableHead>Actions</TableHead>
+              {!hideActions && <TableHead>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -233,11 +225,18 @@ export function DataTable({
             ) : users.length ? (
               users.map((user) => (
                 <TableRow key={user._id}>
-                  <TableCell className="cursor-pointer" onClick={() => router.push(`/dashboard/users/${user._id}`)}>
+                  <TableCell
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/dashboard/users/${user._id}`)}
+                  >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         {user.profilePicture ? (
-                          <img src={user.profilePicture} alt={user.name} className="h-full w-full rounded-full object-cover" />
+                          <img
+                            src={user.profilePicture}
+                            alt={user.name}
+                            className="h-full w-full rounded-full object-cover"
+                          />
                         ) : (
                           <AvatarFallback className="text-xs font-medium">
                             {user.name.substring(0, 2).toUpperCase()}
@@ -245,7 +244,9 @@ export function DataTable({
                         )}
                       </Avatar>
                       <div className="flex flex-col">
-                        <span className="font-medium hover:underline">{user.name}</span>
+                        <span className="font-medium hover:underline">
+                          {user.name}
+                        </span>
                         <span className="text-sm text-muted-foreground">
                           @{user.username}
                         </span>
@@ -259,76 +260,95 @@ export function DataTable({
                     <span className="text-sm">{user.cashApp || "-"}</span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm">{new Date(user.createdAt).toLocaleDateString()}</span>
+                    <span className="text-sm">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm">{new Date(user.updatedAt).toLocaleDateString()}</span>
+                    <span className="text-sm">
+                      {new Date(user.updatedAt).toLocaleDateString()}
+                    </span>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 cursor-pointer"
-                        onClick={() => router.push(`/dashboard/users/${user._id}`)}
-                      >
-                        <Eye className="size-4" />
-                        <span className="sr-only">View user</span>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className={`h-8 w-8 cursor-pointer ${
-                              blockedUsers[user._id] ?? user.isBlocked
-                                ? "text-red-600 hover:bg-red-50"
-                                : "text-gray-600 hover:bg-gray-50"
-                            }`}
-                            disabled={blockLoading[user._id]}
-                          >
-                            {blockLoading[user._id] ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : blockedUsers[user._id] ?? user.isBlocked ? (
-                              <Lock className="size-4" />
-                            ) : (
-                              <Unlock className="size-4" />
-                            )}
-                            <span className="sr-only">Toggle block status</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogTitle>
-                            {(blockedUsers[user._id] ?? user.isBlocked) ? "Unblock User?" : "Block User?"}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {(blockedUsers[user._id] ?? user.isBlocked)
-                              ? `Are you sure you want to unblock ${user.name}? They will be able to access the platform again.`
-                              : `Are you sure you want to block ${user.name}? They won't be able to access the platform.`}
-                          </AlertDialogDescription>
-                          <div className="flex gap-4">
-                            <AlertDialogCancel disabled={blockLoading[user._id]}>
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              disabled={blockLoading[user._id]}
-                              className={
+                  {!hideActions && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 cursor-pointer"
+                          onClick={() =>
+                            router.push(`/dashboard/users/${user._id}`)
+                          }
+                        >
+                          <Eye className="size-4" />
+                          <span className="sr-only">View user</span>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={`h-8 w-8 cursor-pointer ${
                                 (blockedUsers[user._id] ?? user.isBlocked)
-                                  ? "bg-green-600 hover:bg-green-700"
-                                  : "bg-red-600 hover:bg-red-700"
-                              }
-                              onClick={() =>
-                                handleBlockToggle(user._id, !(blockedUsers[user._id] ?? user.isBlocked))
-                              }
+                                  ? "text-red-600 hover:bg-red-50"
+                                  : "hover:text-black hover:bg-gray-300"
+                              }`}
+                              disabled={blockLoading[user._id]}
                             >
-                              {blockLoading[user._id] && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                              {(blockedUsers[user._id] ?? user.isBlocked) ? "Unblock" : "Block"}
-                            </AlertDialogAction>
-                          </div>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+                              {blockLoading[user._id] ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : (blockedUsers[user._id] ?? user.isBlocked) ? (
+                                <Lock className="size-4" />
+                              ) : (
+                                <Unlock className="size-4" />
+                              )}
+                              <span className="sr-only">Toggle block status</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogTitle>
+                              {(blockedUsers[user._id] ?? user.isBlocked)
+                                ? "Unblock User?"
+                                : "Block User?"}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {(blockedUsers[user._id] ?? user.isBlocked)
+                                ? `Are you sure you want to unblock ${user.name}? They will be able to access the platform again.`
+                                : `Are you sure you want to block ${user.name}? They won't be able to access the platform.`}
+                            </AlertDialogDescription>
+                            <div className="flex gap-4">
+                              <AlertDialogCancel
+                                disabled={blockLoading[user._id]}
+                              >
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                disabled={blockLoading[user._id]}
+                                className={
+                                  (blockedUsers[user._id] ?? user.isBlocked)
+                                    ? "bg-green-600 hover:bg-green-700"
+                                    : "bg-red-600 hover:bg-red-700"
+                                }
+                                onClick={() =>
+                                  handleBlockToggle(
+                                    user._id,
+                                    !(blockedUsers[user._id] ?? user.isBlocked),
+                                  )
+                                }
+                              >
+                                {blockLoading[user._id] && (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                {(blockedUsers[user._id] ?? user.isBlocked)
+                                  ? "Unblock"
+                                  : "Block"}
+                              </AlertDialogAction>
+                            </div>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (

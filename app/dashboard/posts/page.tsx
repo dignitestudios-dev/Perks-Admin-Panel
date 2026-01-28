@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AnonymousPosts } from "./components/anonymous-posts"
-import { DonationPosts } from "./components/donation-posts"
-import { ReportedPosts } from "./components/reported-posts"
+import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { FileText, Gift } from "lucide-react"
 
 export default function PostsPage() {
   return (
@@ -13,33 +12,48 @@ export default function PostsPage() {
       <div>
         <h1 className="text-3xl font-bold">Posts Management</h1>
         <p className="text-muted-foreground mt-2">
-          Manage all posts, donations, and reported content
+          Select a post type to manage
         </p>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="anonymous" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="anonymous">Anonymous Posts</TabsTrigger>
-          <TabsTrigger value="donations">Donation Posts</TabsTrigger>
-          <TabsTrigger value="reported">Reported Content</TabsTrigger>
-        </TabsList>
+      {/* Post Type Cards */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Anonymous Posts Card */}
+        <Card className="hover:border-primary/50 transition-colors">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <FileText className="h-6 w-6 text-blue-500" />
+              <div className="space-y-1">
+                <CardTitle>Anonymous Posts</CardTitle>
+                <CardDescription>Manage anonymous user posts</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/dashboard/posts/anonymous">View Posts</Link>
+            </Button>
+          </CardContent>
+        </Card>
 
-        {/* Anonymous Posts Tab */}
-        <TabsContent value="anonymous" className="space-y-4">
-          <AnonymousPosts />
-        </TabsContent>
-
-        {/* Donation Posts Tab */}
-        <TabsContent value="donations" className="space-y-4">
-          <DonationPosts />
-        </TabsContent>
-
-        {/* Reported Posts Tab */}
-        <TabsContent value="reported" className="space-y-4">
-          <ReportedPosts />
-        </TabsContent>
-      </Tabs>
+        {/* Donation Posts Card */}
+        <Card className="hover:border-primary/50 transition-colors">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Gift className="h-6 w-6 text-green-500" />
+              <div className="space-y-1">
+                <CardTitle>Donation Posts</CardTitle>
+                <CardDescription>Manage donation posts and campaigns</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/dashboard/posts/donations">View Posts</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

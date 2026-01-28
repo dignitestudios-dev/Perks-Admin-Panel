@@ -14,9 +14,9 @@ export function FeedBackReceived({ user }: FeedBackReceivedProps) {
 
   if (feedbackReceived.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Feedback Received</CardTitle>
+      <Card className="border border-primary/10 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg">
+          <CardTitle className="text-primary text-xl">Feedback Received</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
@@ -34,13 +34,16 @@ export function FeedBackReceived({ user }: FeedBackReceivedProps) {
       : 0
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-lg hover:shadow-sm transition-shadow">
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Average Rating</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Average Rating</p>
+              </div>
               <div className="flex items-center gap-2">
                 <p className="text-3xl font-bold">{averageRating}</p>
                 <div className="flex gap-1">
@@ -59,33 +62,39 @@ export function FeedBackReceived({ user }: FeedBackReceivedProps) {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-lg hover:shadow-sm transition-shadow">
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Total Reviews</p>
-              <p className="text-3xl font-bold">{feedbackReceived.length}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Total Reviews</p>
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{feedbackReceived.length}</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] shadow-lg hover:shadow-sm transition-shadow">
           <CardContent className="pt-6">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">5-Star Reviews</p>
-              <p className="text-3xl font-bold">{feedbackReceived.filter((r) => r.stars === 5).length}</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5-Star Reviews</p>
+              </div>
+              <p className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{feedbackReceived.filter((r) => r.stars === 5).length}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Feedback List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Reviews</CardTitle>
+      <Card className="border border-primary/10 shadow-lg hover:shadow-xl transition-shadow pt-0">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg pt-6">
+          <CardTitle className="text-primary text-xl">Recent Reviews</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {feedbackReceived.map((review) => (
-              <div key={review._id} className="p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+              <div key={review._id} className="p-4 rounded-lg border border-primary/10 bg-gradient-to-r from-primary/[0.03] to-transparent hover:from-primary/5 hover:to-primary/[0.02] transition-colors">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">

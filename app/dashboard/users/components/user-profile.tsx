@@ -27,11 +27,11 @@ export function UserProfile({ user }: UserProfileProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Personal Information Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
+      <Card className="border border-primary/10 shadow-lg hover:shadow-xl transition-shadow pt-0">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg pt-6">
+          <CardTitle className="text-primary text-xl">Personal Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Avatar and Basic Info */}
@@ -117,9 +117,9 @@ export function UserProfile({ user }: UserProfileProps) {
       </Card>
 
       {/* Professional Information Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Professional Information</CardTitle>
+      <Card className="border border-primary/10 shadow-lg hover:shadow-xl transition-shadow pt-0">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg pt-6">
+          <CardTitle className="text-primary text-xl">Professional Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

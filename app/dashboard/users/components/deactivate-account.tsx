@@ -53,20 +53,20 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {error && (
-        <div className="p-4 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm">
+        <div className="p-4 rounded-lg border border-primary/30 bg-primary/10 text-primary text-sm">
           {error}
         </div>
       )}
 
       {/* Account Status Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Account Status</CardTitle>
+      <Card className="border border-primary/10 shadow-lg pt-0">
+        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border-b border-primary/10 rounded-t-lg pt-6">
+          <CardTitle className="text-primary text-xl">Current Account Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="p-4 rounded-lg border">
+          <div className="p-4 rounded-lg border border-primary/10 bg-gradient-to-r from-primary/[0.03] to-transparent">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium mb-2">Account Status</p>
@@ -77,8 +77,8 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
               <Badge
                 className={
                   isBlocked
-                    ? "bg-red-50 text-red-700 border-red-200"
-                    : "bg-green-50 text-green-700 border-green-200"
+                    ? "bg-primary/20 text-primary border-primary/30"
+                    : "bg-primary/20 text-primary border-primary/30"
                 }
               >
                 {isBlocked ? "Blocked" : "Active"}
@@ -90,27 +90,27 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
 
       {/* Danger Zone */}
       {isBlocked && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-700 flex items-center gap-2">
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02]">
+          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10 rounded-t-lg">
+            <CardTitle className="text-primary flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               Account Blocked
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-red-700">
+            <p className="text-sm text-primary">
               This account is currently blocked and the user cannot access the platform.
             </p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="border-red-200" disabled={isLoading}>
+                <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Unblock Account
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <CheckCircle className="h-5 w-5 text-primary" />
                   Unblock Account?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
@@ -121,7 +121,7 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
                   <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     disabled={isLoading}
-                    className="bg-green-600 hover:bg-green-700"
+                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white"
                     onClick={() => handleBlockToggle(false)}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -135,9 +135,9 @@ export function DeactivateAccount({ user, onBlockStatusChange }: DeactivateAccou
       )}
 
       {!isBlocked && (
-        <Card className="border-red-200">
-          <CardHeader>
-            <CardTitle className="text-red-700 flex items-center gap-2">
+        <Card className="border border-primary/10 bg-gradient-to-br from-primary/5 to-primary/[0.02] pt-0">
+          <CardHeader className="bg-red-600 border-b border-primary/10 rounded-t-lg pt-6">
+            <CardTitle className="text-white flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               Danger Zone
             </CardTitle>
