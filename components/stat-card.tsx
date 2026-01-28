@@ -5,12 +5,12 @@ import { LucideIcon, TrendingUp, TrendingDown, ArrowUpRight } from "lucide-react
 
 interface StatCardProps {
   title: string;
-  current: string | number;
+  current: React.ReactNode | string | number;
   previous?: string | number;
   growth?: number;
   icon: LucideIcon;
   variant?: "default" | "primary" | "success" | "warning" | "danger";
-  description?: string;
+  description?: React.ReactNode | string;
 }
 
 const variantStyles = {

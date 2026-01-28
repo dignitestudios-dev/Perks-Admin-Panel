@@ -41,6 +41,40 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+  role: "admin" | "user" | "store";
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface VerifyOTPRequest {
+  email: string;
+  role: "admin" | "user" | "store";
+  otp: string;
+}
+
+export interface VerifyOTPResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string;
+    user: User;
+  };
+}
+
+export interface ResetPasswordRequest {
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 /**
  * Authentication API service
  * Handles all auth-related API calls at production level
@@ -143,6 +177,78 @@ export const authAPI = {
     } catch (error: any) {
       throw {
         message: error.response?.data?.message || "Failed to change password",
+        status: error.response?.status || 500,
+      };
+    }
+  },
+
+  /**
+   * Request password reset via email OTP
+   * @param data - Email and role
+   * @returns Success response with OTP sent
+   */
+  forgotPassword: async (data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
+    try {
+      const response = await API.post<ForgotPasswordResponse>("/auth/forgot", {
+        email: data.email,
+        role: data.role,
+      });
+      return response.data;
+    } catch (error: any) {
+      throw {
+        message: error.response?.data?.message || "Failed to send reset link",
+        status: error.response?.status || 500,
+      };
+    }
+  },
+
+  /**
+   * Verify OTP sent to email
+   * @param data - Email, role, and OTP
+   * @returns Token and user data
+   */
+  verifyOTP: async (data: VerifyOTPRequest): Promise<VerifyOTPResponse> => {
+    try {
+      const response = await API.post<VerifyOTPResponse>("/auth/verifyOTP", {
+        email: data.email,
+        role: data.role,
+        otp: data.otp,
+      });
+      
+      // Note: Token is stored in verification page (localStorage)
+      // This method just returns the response
+      
+      return response.data;
+    } catch (error: any) {
+      throw {
+        message: error.response?.data?.message || "Failed to verify OTP",
+        status: error.response?.status || 500,
+      };
+    }
+  },
+
+  /**
+   * Reset password with token from OTP verification
+   * @param data - New password
+   * @param token - Reset token from verifyOTP
+   * @returns Success response
+   */
+  resetPassword: async (data: ResetPasswordRequest, token: string): Promise<ResetPasswordResponse> => {
+    try {
+      const response = await API.post<ResetPasswordResponse>("/auth/updatePassword", {
+        password: data.password,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      // Note: Token cleanup is done in reset-password page (localStorage)
+      
+      return response.data;
+    } catch (error: any) {
+      throw {
+        message: error.response?.data?.message || "Failed to reset password",
         status: error.response?.status || 500,
       };
     }

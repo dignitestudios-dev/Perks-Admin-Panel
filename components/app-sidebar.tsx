@@ -50,14 +50,8 @@ const data = {
       items: [
         {
           title: "Dashboard",
-          url: "#",
+          url: "/dashboard",
           icon: BarChart3,
-          items: [
-            { title: "Users", url: "/dashboard/analytics/users" },
-            { title: "Posts", url: "/dashboard/analytics/posts" },
-            { title: "Donations", url: "/dashboard/analytics/donations" },
-            { title: "Reports", url: "/dashboard/analytics/reports" },
-          ],
         },
       ],
     },

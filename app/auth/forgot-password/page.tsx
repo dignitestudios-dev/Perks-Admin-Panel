@@ -6,20 +6,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { authAPI } from "@/lib/api/auth.api";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Call the forgot password function
-    handleForgotPassword();
-  };
+    setError("");
+    
+    if (!email) {
+      setError("Please enter your email address");
+      return;
+    }
 
-  const handleForgotPassword = () => {
-    // Function logic - redirects to verification route
-    router.push("/auth/verification");
+    setIsLoading(true);
+    try {
+      await authAPI.forgotPassword({
+        email,
+        role: "admin",
+      });
+      
+      // Store email for verification page
+      sessionStorage.setItem("resetEmail", email);
+      
+      toast.success("OTP sent successfully! Check your email.");
+      router.push("/auth/verification");
+    } catch (err: any) {
+      const errorMessage = err?.message || "Failed to send reset link";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,6 +55,12 @@ const ForgotPassword = () => {
         </p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-6">
+        {error && (
+          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -39,12 +69,20 @@ const ForgotPassword = () => {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading}
             required
           />
         </div>
 
-        <Button type="submit" className="w-full">
-          Send Reset Link
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            "Send Reset Link"
+          )}
         </Button>
 
         <div className="text-center">
