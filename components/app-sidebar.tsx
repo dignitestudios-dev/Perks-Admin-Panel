@@ -49,8 +49,13 @@ const data = {
       label: "Dashboards",
       items: [
         {
-          title: "Dashboard",
-          url: "/dashboard",
+          title: "Overview",
+          url: "/dashboard/overview",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Analytics",
+          url: "/dashboard/analytics",
           icon: BarChart3,
         },
       ],
