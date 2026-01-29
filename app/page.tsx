@@ -8,11 +8,7 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push("/dashboard");
-    }, 2000); // Redirect after 2 seconds
-
-    return () => clearTimeout(timer);
+    router.push("/dashboard");
   }, [router]);
 
   return (
