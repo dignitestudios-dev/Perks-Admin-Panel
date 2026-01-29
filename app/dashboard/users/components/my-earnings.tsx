@@ -82,19 +82,19 @@ export function MyEarnings({ user }: MyEarningsProps) {
               <div key={tip._id} className="flex items-center justify-between p-4 rounded-lg border border-primary/10 bg-gradient-to-r from-primary/[0.03] to-transparent hover:from-primary/5 hover:to-primary/[0.02] transition-colors">
                 <div className="flex items-center gap-4 flex-1">
                   <Avatar className="h-10 w-10">
-                    {tip.sentBy.profilePicture ? (
-                      <img src={tip.sentBy.profilePicture} alt={tip.sentBy.name} className="h-full w-full object-cover" />
+                    {tip.sentBy?.profilePicture ? (
+                      <img src={tip.sentBy.profilePicture} alt={tip.sentBy?.name || "User"} className="h-full w-full object-cover" />
                     ) : (
-                      <AvatarFallback>{tip.sentBy.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>{(tip.sentBy?.name || "User").substring(0, 2).toUpperCase()}</AvatarFallback>
                     )}
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium">{tip.isAnonymous ? "Anonymous User" : tip.sentBy.name}</p>
+                    <p className="font-medium">{tip.isAnonymous ? "Anonymous User" : (tip.sentBy?.name || "Unknown User")}</p>
                     <p className="text-sm text-muted-foreground">
-                      {tip.isAnonymous ? "Anonymous" : `@${tip.sentBy.username}`}
+                      {tip.isAnonymous ? "Anonymous" : `@${tip.sentBy?.username || "unknown"}`}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(tip.createdAt).toLocaleDateString()}
+                      {tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : "Date unknown"}
                     </p>
                   </div>
                 </div>

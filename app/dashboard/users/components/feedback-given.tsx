@@ -98,16 +98,16 @@ export function FeedBackGiven({ user }: FeedBackGivenProps) {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      {review.user.profilePicture ? (
-                        <img src={review.user.profilePicture} alt={review.user.name} className="h-full w-full object-cover" />
+                      {review.user?.profilePicture ? (
+                        <img src={review.user.profilePicture} alt={review.user?.name || "User"} className="h-full w-full object-cover" />
                       ) : (
-                        <AvatarFallback>{review.user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>{(review.user?.name || "User").substring(0, 2).toUpperCase()}</AvatarFallback>
                       )}
                     </Avatar>
                     <div>
-                      <p className="font-medium">Review for {review.isAnonymous ? "Anonymous User" : review.user.name}</p>
+                      <p className="font-medium">Review for {review.isAnonymous ? "Anonymous User" : (review.user?.name || "Unknown User")}</p>
                       <p className="text-sm text-muted-foreground">
-                        {review.isAnonymous ? "Anonymous" : `@${review.user.username}`}
+                        {review.isAnonymous ? "Anonymous" : `@${review.user?.username || "unknown"}`}
                       </p>
                     </div>
                   </div>
@@ -116,14 +116,14 @@ export function FeedBackGiven({ user }: FeedBackGivenProps) {
                       <Star
                         key={star}
                         className={`h-4 w-4 ${
-                          star <= review.stars ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                          star <= (review.stars || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
                         }`}
                       />
                     ))}
                   </div>
                 </div>
                 {review.description && <p className="text-sm text-muted-foreground mt-2">{review.description}</p>}
-                <p className="text-xs text-muted-foreground mt-3">{new Date(review.createdAt).toLocaleDateString()}</p>
+                <p className="text-xs text-muted-foreground mt-3">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : "Date unknown"}</p>
               </div>
             ))}
           </div>

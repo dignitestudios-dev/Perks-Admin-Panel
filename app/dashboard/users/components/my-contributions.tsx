@@ -107,15 +107,15 @@ export function MyContributions({ user }: MyContributionsProps) {
               >
                 <div className="flex items-center gap-4 flex-1">
                   <Avatar className="h-10 w-10">
-                    {tip.user.profilePicture ? (
+                    {tip.user?.profilePicture ? (
                       <img
                         src={tip.user.profilePicture}
-                        alt={tip.user.name}
+                        alt={tip.user?.name || "User"}
                         className="h-full w-full object-cover"
                       />
                     ) : (
                       <AvatarFallback>
-                        {tip.user.name.substring(0, 2).toUpperCase()}
+                        {(tip.user?.name || "User").substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     )}
                   </Avatar>
@@ -123,13 +123,13 @@ export function MyContributions({ user }: MyContributionsProps) {
                     <p className="font-medium">
                       {tip.isAnonymous
                         ? "Sent Anonymously"
-                        : `Sent to ${tip.user.name}`}
+                        : `Sent to ${tip.user?.name || "Unknown User"}`}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {tip.isAnonymous ? "Anonymous" : `@${tip.user.username}`}
+                      {tip.isAnonymous ? "Anonymous" : `@${tip.user?.username || "unknown"}`}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(tip.createdAt).toLocaleDateString()}
+                      {tip.createdAt ? new Date(tip.createdAt).toLocaleDateString() : "Date unknown"}
                     </p>
                   </div>
                 </div>

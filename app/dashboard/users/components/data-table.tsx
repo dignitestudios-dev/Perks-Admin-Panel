@@ -265,24 +265,24 @@ export function DataTable({
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        {user.profilePicture ? (
+                        {user?.profilePicture ? (
                           <img
                             src={user.profilePicture}
-                            alt={user.name}
+                            alt={user?.name || "User"}
                             className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
                           <AvatarFallback className="text-xs font-medium">
-                            {user.name.substring(0, 2).toUpperCase()}
+                            {(user?.name || "User").substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         )}
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="font-medium hover:underline">
-                          {user.name}
+                          {user?.name || "Name not available"}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          @{user.username}
+                          @{user?.username || "unknown"}
                         </span>
                       </div>
                     </div>

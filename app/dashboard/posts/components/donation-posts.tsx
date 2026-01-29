@@ -26,6 +26,7 @@ import {
   Eye,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import Link from "next/link";
 
 const getRelativeTime = (dateString: string): string => {
   const date = new Date(dateString)
@@ -226,7 +227,12 @@ function DonationDetailDialog({
                   <h3 className="font-semibold text-primary text-lg">Campaign Creator</h3>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-primary/10 shrink-0">
+                  <Link
+                    href={`/dashboard/users/${post.user._id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-primary/10 shrink-0"
+                    aria-label={`View ${post.user.name} profile`}
+                  >
                     {post.user.profilePicture ? (
                       <Image
                         src={post.user.profilePicture}
@@ -241,10 +247,12 @@ function DonationDetailDialog({
                         </span>
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <div>
-                    <p className="font-semibold text-foreground">{post.user.name}</p>
-                    <p className="text-sm text-muted-foreground">@{post.user.username}</p>
+                    <Link href={`/dashboard/users/${post.user._id}`} onClick={(e) => e.stopPropagation()} className="block">
+                      <p className="font-semibold text-foreground">{post.user.name}</p>
+                      <p className="text-sm text-muted-foreground">@{post.user.username}</p>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -463,7 +471,12 @@ export function DonationPosts() {
 
                     {/* Creator Info */}
                     {post.user && (
-                      <div className="flex items-center gap-2 pb-3 border-b border-primary/10">
+                      <Link
+                        href={`/dashboard/users/${post.user._id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-2 pb-3 border-b border-primary/10"
+                        aria-label={`View ${post.user.name} profile`}
+                      >
                         <div className="relative w-6 h-6 rounded-full overflow-hidden shrink-0">
                           {post.user.profilePicture ? (
                             <Image
@@ -479,14 +492,10 @@ export function DonationPosts() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">
-                            {post.user.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            @{post.user.username}
-                          </p>
+                          <p className="text-xs font-medium truncate">{post.user.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">@{post.user.username}</p>
                         </div>
-                      </div>
+                      </Link>
                     )}
 
                     {/* Donation Progress */}

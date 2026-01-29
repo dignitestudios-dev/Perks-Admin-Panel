@@ -37,15 +37,15 @@ export function UserProfile({ user }: UserProfileProps) {
           {/* Avatar and Basic Info */}
           <div className="flex gap-6 items-start">
             <Avatar className="h-20 w-20">
-              {user.profilePicture ? (
+              {user?.profilePicture ? (
                 <img
                   src={user.profilePicture}
-                  alt={user.name}
+                  alt={user?.name || "User"}
                   className="h-full w-full object-cover"
                 />
               ) : (
                 <AvatarFallback className="text-lg font-semibold">
-                  {user.name.substring(0, 2).toUpperCase()}
+                  {(user?.name || "User").substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               )}
             </Avatar>
@@ -54,13 +54,13 @@ export function UserProfile({ user }: UserProfileProps) {
                 <p className="text-sm font-medium text-muted-foreground">
                   Full Name
                 </p>
-                <p className="text-lg font-semibold">{user.name}</p>
+                <p className="text-lg font-semibold">{user?.name || "Name not available"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
                   Username
                 </p>
-                <p className="text-lg">@{user.username}</p>
+                <p className="text-lg">@{user?.username || "unknown"}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Bio</p>
